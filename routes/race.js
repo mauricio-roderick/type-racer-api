@@ -5,24 +5,26 @@ const moment = require('moment')
 const uuidV4 = require('uuid').v4
 
 router.get('/', async (req, res, next) => {
-  const { page } = req.query
+  const { page = 0 } = req.query
   let { limit } = req.query
   
-  if (!limit || limit > 20) limit = 20
+  if (!limit || limit > 10) limit = 10
 
   const filter = {
     user: req.user._id
   }
-  const totalRecords = await db.race.count(filter)
-  const data = await db.race
+  const totalRecords = await db.raceHistory.count(filter)
+  const data = await db.raceHistory
     .find(filter)
     .sort({ timestamp: -1 })
     .skip(page * limit)
     .limit(limit)
 
   res.status(200).send({
-    race: data,
+    raceHistory: data,
     meta: {
+      page,
+      limit,
       totalRecords
     }
   })
@@ -30,7 +32,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   const data = _.pick(req.body, ['wpm', 'time', 'textLength'])
-  const doc = await db.race.insert({
+  const doc = await db.raceHistory.insert({
     ...data,
     _id: uuidV4(),
     user: req.user._id,

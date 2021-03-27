@@ -1,10 +1,10 @@
 const Datastore = require('nedb-promises')
 const user = new Datastore({ filename: './database/user.db' })
-const race = new Datastore({ filename: './database/race.db' })
+const raceHistory = new Datastore({ filename: './database/race-history.db' })
 
 const db = {
   user,
-  race
+  raceHistory
 }
 
 module.exports = db
