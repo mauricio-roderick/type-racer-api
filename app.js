@@ -1,8 +1,6 @@
 const express = require('express')
 const cors = require('cors')
-const passport = require('passport')
 const logger = require('morgan')
-const jwt = require('jsonwebtoken')
 
 const db = require("./database")
 
