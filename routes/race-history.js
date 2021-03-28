@@ -36,10 +36,47 @@ router.post('/', async (req, res, next) => {
     ...data,
     _id: uuidV4(),
     user: req.user._id,
-    timestamp: moment().format()
+    timestamp: moment().toDate()
   })
 
   res.status(201).send(doc)
+})
+
+router.get('/24-hour-stats', async (req, res, next) => {
+  const timestamp = moment().subtract(1, 'days').toDate();
+  const data = await db.raceHistory
+    .find({
+      user: req.user._id,
+      timestamp: {
+        $gte: timestamp
+      }
+    })
+
+  let averageWpm = 0
+  let averageTime = 0
+
+  if (data.length) {
+    let totalWpm = 0
+    let totalTime = 0
+
+    data.forEach(item => {
+      totalWpm += item.wpm
+      totalTime += item.time
+    })
+
+    if (totalWpm) {
+      averageWpm = (totalWpm / data.length)
+    }
+    if (totalTime) {
+      averageTime = (totalTime / data.length)
+    }
+  }
+
+  res.status(200).send({
+    averageWpm: Math.round(averageWpm),
+    averageTime: Math.round(averageTime),
+    coverageDate: timestamp
+  })
 })
 
 module.exports = router
