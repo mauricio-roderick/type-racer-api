@@ -42,8 +42,8 @@ router.post('/', async (req, res, next) => {
   res.status(201).send(doc)
 })
 
-router.get('/24-hour-stats', async (req, res, next) => {
-  const timestamp = moment().subtract(1, 'days').toDate();
+router.get('/recent-stats', async (req, res, next) => {
+  const timestamp = moment().subtract(8, 'hours').toDate();
   const data = await db.raceHistory
     .find({
       user: req.user._id,
@@ -51,6 +51,7 @@ router.get('/24-hour-stats', async (req, res, next) => {
         $gte: timestamp
       }
     })
+    .sort({ timestamp: 1 })
 
   let averageWpm = 0
   let averageTime = 0
@@ -75,7 +76,7 @@ router.get('/24-hour-stats', async (req, res, next) => {
   res.status(200).send({
     averageWpm: Math.round(averageWpm),
     averageTime: Math.round(averageTime),
-    coverageDate: timestamp
+    coverageDate: _.get(data, '0.timestamp', null)
   })
 })
 
