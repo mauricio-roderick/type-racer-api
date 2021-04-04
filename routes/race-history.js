@@ -43,7 +43,11 @@ router.post('/', async (req, res, next) => {
 })
 
 router.get('/recent-stats', async (req, res, next) => {
-  const timestamp = moment().subtract(8, 'hours').toDate();
+  const firstDoc = await db.raceHistory
+  .findOne({ user: req.user._id })
+  .sort({ timestamp: 1 })
+  
+  const timestamp = moment(firstDoc.timestamp).subtract(1, 'month').toDate();
   const data = await db.raceHistory
     .find({
       user: req.user._id,
@@ -53,8 +57,10 @@ router.get('/recent-stats', async (req, res, next) => {
     })
     .sort({ timestamp: 1 })
 
+     
   let averageWpm = 0
   let averageTime = 0
+  let lastTimeStamp
 
   if (data.length) {
     let totalWpm = 0
@@ -63,6 +69,7 @@ router.get('/recent-stats', async (req, res, next) => {
     data.forEach(item => {
       totalWpm += item.wpm
       totalTime += item.time
+      lastTimeStamp = item.timestamp
     })
 
     if (totalWpm) {
@@ -76,7 +83,8 @@ router.get('/recent-stats', async (req, res, next) => {
   res.status(200).send({
     averageWpm: Math.round(averageWpm),
     averageTime: Math.round(averageTime),
-    coverageDate: _.get(data, '0.timestamp', null)
+    dateFrom: firstDoc.timestamp,
+    dateTo: lastTimeStamp
   })
 })
 
